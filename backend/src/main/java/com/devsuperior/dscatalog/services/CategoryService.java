@@ -1,14 +1,14 @@
 package com.devsuperior.dscatalog.services;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,10 +25,9 @@ public class CategoryService {
 	private CategoryRepository repository;// acessa o repository e chama as categorias do BD
 
 	@Transactional(readOnly = true)
-	public List<CategoryDTO> findAll() { // findAll é o nome do método, pode ser qlq um.
-		List<Category> list = repository.findAll();// acessa o repository e chama as categorias do BD, coloca na
-													// interface(classe) o @Repository
-		return list.stream().map(x -> new CategoryDTO(x)).collect(Collectors.toList());
+	public Page<CategoryDTO> findAllPaged(PageRequest pageRequest) { // findAll é o nome do método, pode ser qlq um.
+		Page<Category> list = repository.findAll(pageRequest);// acessa o repository e chama as categorias do BD, coloca na													
+		return list.map(x -> new CategoryDTO(x));
 	}
 
 	@Transactional(readOnly = true)
