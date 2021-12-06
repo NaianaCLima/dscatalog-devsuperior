@@ -7,12 +7,15 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
+import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
@@ -54,10 +57,24 @@ public class CategoryService {
 			entity.setName(dto.getName());
 			entity = repository.save(entity);
 			return new CategoryDTO(entity);
-		} catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Id não existe!" + id);
+		} catch (EntityNotFoundException e) {//exceção específica 
+			throw new ResourceNotFoundException("Id não existe! " + id);
 
 		}
+	}
+
+	// naõ coloca o @transactional
+	public void delete(Long id) {
+		try {
+			repository.deleteById(id);
+			
+		} catch (EmptyResultDataAccessException e) {//tratando exceção caso tenha um id inexistente
+			throw new ResourceNotFoundException("Id não existe! " + id);//classe criada por nós
+
+		}catch(DataIntegrityViolationException e) {//para garantir a integridade do BD (Não deletar o que não pode ser deletado)
+			throw new DatabaseException("Violação de integridade!");
+		}
+
 	}
 
 }
